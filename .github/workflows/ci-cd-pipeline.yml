@@ -48,7 +48,9 @@ jobs:
       - name: Install Docker Compose
         run: |
           sudo apt-get update
-          sudo apt-get install -y docker-compose
+          sudo apt-get install -y python3-pip  # Install pip if not already installed
+          sudo pip3 install docker-compose
+          docker-compose -f docker-compose.yml build
 
       - name: Login to Docker Hub
         uses: docker/login-action@v1
