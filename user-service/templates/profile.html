@@ -1,0 +1,60 @@
+<!-- templates/profile.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile</title>
+    <link rel="stylesheet" href="styles.css"> <!-- Optional: Add your CSS file -->
+</head>
+
+<body>
+    <h1>User Profile</h1>
+    <div id="user-info">
+        <p><strong>Username:</strong> <span id="username"></span></p>
+        <p><strong>Email:</strong> <span id="email"></span></p>
+    </div>
+    <button onclick="logout()">Logout</button>
+
+    <script>
+        const token = localStorage.getItem('token'); // Assuming you're storing the JWT in localStorage
+
+        if (!token) {
+            alert('You are not authorized. Please log in.');
+            window.location.href = '/login'; // Redirect to login if no token
+        } else {
+            fetchUserProfile();
+        }
+
+        function fetchUserProfile() {
+            const userId = localStorage.getItem('user_id'); // Get user ID from localStorage
+            fetch(`/api/users/profile/${userId}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+                .then(response => {
+                    if (!response.ok) throw new Error('Failed to fetch user profile');
+                    return response.json();
+                })
+                .then(data => {
+                    document.getElementById('username').textContent = data.username;
+                    document.getElementById('email').textContent = data.email;
+                })
+                .catch(error => {
+                    console.error(error);
+                    alert('Failed to load profile');
+                });
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user_id');
+            window.location.href = '/login'; // Redirect to login after logout
+        }
+    </script>
+</body>
+
+</html>

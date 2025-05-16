@@ -1,0 +1,153 @@
+services:
+  # Databases
+  mysql:
+    image: mysql:8.0
+    container_name: task-management-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - ./database/init:/docker-entrypoint-initdb.d
+      - mysql-data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    restart: always
+
+  # Kafka and Zookeeper for messaging
+  zookeeper:
+    image: wurstmeister/zookeeper
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+    restart: always
+
+  kafka:
+    image: wurstmeister/kafka
+    container_name: kafka
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: kafka
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+    depends_on:
+      - zookeeper
+    restart: always
+
+  # Microservices
+  user-service:
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+    container_name: user-service
+    depends_on:
+      - mysql
+    environment:
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USER=${MYSQL_USER}
+      - DB_PASSWORD=${MYSQL_PASSWORD}
+      - DB_NAME=${DB_USER_DB}
+    ports:
+      - "8081:8081"
+    restart: always
+
+  task-service:
+    build: 
+      context: ./task-service
+      dockerfile: Dockerfile
+    container_name: task-service
+    depends_on:
+      - mysql
+      - kafka
+    environment:
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USER=${MYSQL_USER}
+      - DB_PASSWORD=${MYSQL_PASSWORD}
+      - DB_NAME=${DB_TASK_DB}
+      - KAFKA_BROKER=${KAFKA_BROKER}
+    ports:
+      - "8082:8082"
+    restart: always
+
+  assignment-service:
+    build: 
+      context: ./assignment-service
+      dockerfile: Dockerfile
+    container_name: assignment-service
+    depends_on:
+      - mysql
+      - kafka
+    environment:
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USER=${MYSQL_USER}
+      - DB_PASSWORD=${MYSQL_PASSWORD}
+      - DB_NAME=${DB_ASSIGNMENT_DB}
+      - KAFKA_BROKER=${KAFKA_BROKER}
+    ports:
+      - "8083:8083"
+    restart: always
+
+  notification-service:
+    build: 
+      context: ./notification-service
+      dockerfile: Dockerfile
+    container_name: notification-service
+    depends_on:
+      - mysql
+      - kafka
+    environment:
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USER=${MYSQL_USER}
+      - DB_PASSWORD=${MYSQL_PASSWORD}
+      - DB_NAME=${DB_NOTIFICATION_DB}
+      - KAFKA_BROKER=${KAFKA_BROKER}
+    ports:
+      - "8084:8084"
+    restart: always
+
+  dashboard-service:
+    build: 
+      context: ./dashboard-service
+      dockerfile: Dockerfile
+    container_name: dashboard-service
+    depends_on:
+      - mysql
+    environment:
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USER=${MYSQL_USER}
+      - DB_PASSWORD=${MYSQL_PASSWORD}
+      - DB_NAME=${DB_DASHBOARD_DB}
+    ports:
+      - "8085:8085"
+    restart: always
+
+  # API Gateway
+  api-gateway:
+    build: 
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    depends_on:
+      - user-service
+      - task-service
+      - assignment-service
+      - notification-service
+      - dashboard-service
+    environment:
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+    ports:
+      - "8080:8080"
+    restart: always
+
+volumes:
+  mysql-data:
+    driver: local
+
+networks:
+  default:
+    driver: bridge
