@@ -22,10 +22,11 @@ jobs:
           - 3306:3306
         volumes:
           - mysql-data:/var/lib/mysql
-        options: >
+        options:
           --health-cmd="mysqladmin ping --silent"
           --health-interval=10s
           --health-timeout=5s
+          --health-retries=3
       zookeeper:
         image: wurstmeister/zookeeper
         ports:
