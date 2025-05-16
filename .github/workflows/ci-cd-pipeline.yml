@@ -37,7 +37,7 @@ jobs:
           KAFKA_ADVERTISED_HOST_NAME: kafka
           KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
         ports:
-          - 9092:9092
+          - 9096:9092
     steps:
       - name: Checkout Code
         uses: actions/checkout@v2
