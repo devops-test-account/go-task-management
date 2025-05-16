@@ -19,7 +19,7 @@ jobs:
           MYSQL_USER: ${{ secrets.MYSQL_USER }}
           MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
         ports:
-          - 3306:3306
+          - 3309:3306
         volumes:
           - mysql-data:/var/lib/mysql
         options:
@@ -30,7 +30,7 @@ jobs:
       zookeeper:
         image: wurstmeister/zookeeper
         ports:
-          - 2181:2181
+          - 2185:2181
       kafka:
         image: wurstmeister/kafka
         env:
