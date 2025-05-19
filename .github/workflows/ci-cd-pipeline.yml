@@ -3,10 +3,16 @@ name: CICD Pipeline
 on:
   push:
     branches:
-      - main  # Change this to your default branch
+      - main
+      - prod
+      - uat
+      - dev
   pull_request:
     branches:
       - main
+      - prod
+      - uat
+      - dev
 
 jobs:
   build:
