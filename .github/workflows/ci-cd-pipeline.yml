@@ -3,10 +3,18 @@ name: CICD Pipeline
 on:
   push:
     branches:
-      - main  # Change this to your default branch
+      - main
+      - 'feature/*'  # Match all feature branches
+      - 'dev'        # Match dev branch
+      - 'uat'        # Match uat branch
+      - 'prod'       # Match prod branch
   pull_request:
     branches:
       - main
+      - 'feature/*'
+      - 'dev'
+      - 'uat'
+      - 'prod'
 
 jobs:
   build:
